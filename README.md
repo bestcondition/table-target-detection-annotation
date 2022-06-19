@@ -47,4 +47,6 @@ python server.py
 
 ## 演示
 
+如果gif太卡，去`./media/screen_record.mov`下载视频看
+
 ![](./media/screen_record.gif)
