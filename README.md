@@ -44,3 +44,7 @@ python server.py
 
 ### 开始干活
 浏览器打开http://127.0.0.1:1212
+
+## 演示
+
+![](./media/screen_record.gif)
