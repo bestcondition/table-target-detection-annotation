@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ le.now_stem }}</title>
+    <script src="{{ url_for('static',filename='js/sheet.js') }}" type="text/javascript"></script>
+    <script type="text/javascript">
+        {% for mark,color in le.mark_color_map.items() %}
+            mark_color_map.set('{{ mark }}', '{{ color }}')
+        {% endfor %}
+        {% for type_name in le.types %}
+            type_list.push('{{ type_name }}')
+        {% endfor %}
+        work_type = '{{ le.work_type }}'
+
+        async function easy_fetch(url, msg) {
+            let response = await fetch(url)
+            if (response.ok) {
+                msg_ok(msg)
+            } else {
+                msg_error(msg)
+                alert(await response.text())
+            }
+        }
+
+
+    </script>
+</head>
+<body>
+<h1>{{ le.now_stem }}</h1>
+<button onclick="navigator.clipboard.writeText(document.title)">Copy Full Name</button>
+<button onclick="navigator.clipboard.writeText(document.title.substr(0,document.title.lastIndexOf('_')))">Copy Stem Name
+</button>
+<p><a href="{{ url_for('preview') }}">当前进度 {{ le.get_now_index() }} / {{ le.file_num }}</a></p>
+<a href="{{ url_for('show_sheet',stem=le.get_last_stem()) }}" id="last_a">last</a>
+<a href="{{ url_for('show_sheet',stem=le.get_next_stem()) }}" id="next_a">next</a>
+<table>
+    {% for rx in range(sheet.array.shape[0]) %}
+        <tr>
+            {% for cx in range(sheet.array.shape[1]) %}
+                <td>
+                    <button
+                            id="bt_{{ rx }}_{{ cx }}"
+                            onclick="press({{ rx }},{{ cx }})"
+                            onmouseover="title_show(this)"
+                            style="width: 50px;height: 20px;overflow: hidden">
+
+                        {{ sheet.array[rx][cx] }}
+                    </button>
+                </td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+</table>
+<div id="tool" style="position: fixed;right: 150px;top:10px;">
+    <div id="label" style="float: right;">
+        <table id="label_table">
+            <tr>
+                <th>类</th>
+                <th>颜色</th>
+            </tr>
+            {% for mark in le.marks %}
+                <tr>
+                    <td>
+                        <button
+                                id="mk_{{ mark }}"
+                                onclick="set_mark('{{ mark }}')">
+                            {{ mark }}
+                        </button>
+                    </td>
+                    <td style="background: {{ le.mark_color_map[mark] }}">{{ le.mark_color_map[mark] }}</td>
+                </tr>
+            {% endfor %}
+
+        </table>
+        <table>
+            <tr>
+                <th>Operation</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <td>Mark</td>
+                <td id="mark_show"></td>
+            </tr>
+            <tr>
+                <td>First Cell</td>
+                <td id="first_show"></td>
+            </tr>
+            <tr>
+                <td>Second Cell</td>
+                <td id="second_show"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <th>Function</th>
+                <th>Hot Key</th>
+            </tr>
+            <tr>
+                <td>{{ le.marks[0] }} mark</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td>{{ le.marks[1] }} mark</td>
+                <td>2</td>
+            </tr>
+            <tr>
+                <td>last</td>
+                <td>←</td>
+            </tr>
+            <tr>
+                <td>next</td>
+                <td>→</td>
+            </tr>
+            <tr>
+                <td>next</td>
+                <td>Space</td>
+            </tr>
+            <tr>
+                <td>save</td>
+                <td>e</td>
+            </tr>
+        </table>
+
+        <div id="msg" style="font-size: 20px;max-width: 150px;">没有一个标记的文件也要按e进行save</div>
+        <table>
+            <tr>
+                <th>类别</th>
+            </tr>
+            {% for type_name in le.types %}
+                <tr>
+                    <td>
+                        <button
+                                id="type_add_{{ type_name }}"
+                                onclick="easy_fetch('{{ url_for('add_type',type_name=type_name) }}','{{ type_name }}')"
+                        >
+                            {{ type_name }}
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div id="mark" style="float: right;">
+        <table id="mark_table">
+            <tbody id="mark_tbody">
+            <tr>
+                <td>show</td>
+                <td>delete</td>
+            </tr>
+            {% for box in le.label.boxes %}
+                <tr id="box_{{ box.y }}_{{ box.x }}_{{ box.h }}_{{ box.w }}_{{ box.mark }}">
+                    <td>
+                        <button onclick="let_box_flash({{ box.y }},{{ box.x }},{{ box.h }},{{ box.w }})">
+                            {{ box.mark }}
+                        </button>
+                    </td>
+                    <td>
+                        <button onclick="delete_box({{ box.y }},{{ box.x }},{{ box.h }},{{ box.w }},'{{ box.mark }}')">
+                            delete
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div id="title_show" style="float: right;max-width: 200px;"></div>
+</div>
+</body>
+<script type="text/javascript">
+    {% for box in le.label.boxes %}
+        draw_box({{ box.y }}, {{ box.x }}, {{ box.h }}, {{ box.w }}, '{{ le.mark_color_map[box.mark] }}')
+    {% endfor %}
+
+    {% for mark in le.marks %}
+        mark_list.push('{{ mark }}')
+    {% endfor %}
+    let title_show_bom = document.getElementById('title_show')
+
+    function title_show(bt) {
+        title_show_bom.innerText = bt.innerText
+    }
+</script>
+</html>

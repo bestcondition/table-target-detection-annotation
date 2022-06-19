@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>Preview</title>
+</head>
+<body>
+<a href="{{ url_for('index') }}">Home</a>
+<table>
+
+    <tbody>
+    <tr>
+        <th>Index</th>
+        <th>Stem</th>
+        <th>Done?</th>
+        <th>Operation</th>
+    </tr>
+    {% for index,stem,done in info %}
+        <tr>
+            <td>{{ index }}</td>
+            <td>{{ stem }}</td>
+            <td>{{ '√' if done else '×' }}</td>
+            <td>
+                <button onclick="show_raw('{{ stem }}')">Show</button>
+                <a href="{{ url_for('show_sheet',stem=stem) }}">To</a>
+            </td>
+
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<div id="raw_show" style="position: fixed;right: 150px;top:10px;"></div>
+</body>
+<script type="text/javascript">
+    async function show_raw(stem) {
+        let stage = document.getElementById('raw_show')
+        let url = '/detail/' + stem
+        let raw_text = await fetch(url)
+        stage.innerText = await raw_text.text()
+
+    }
+</script>
+</html>
